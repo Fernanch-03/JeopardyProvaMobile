@@ -10,6 +10,7 @@ import Jogo from './src/jogo/index';
 import Pergunta from './src/pergunta/index';
 import Resposta from './src/resposta/index';
 import Pontuacao from './src/pontuacao/index';
+import Resultados from './src/resultados/index';
 
 
 const Stack = createStackNavigator();
@@ -23,13 +24,17 @@ export default function App(){
         <Stack.Screen
         name="Inicio"
         component={Inicio}
-        options={{
+        
+          options={{
+            cardStyle: {
+             backgroundColor: '#060CE9', 
+            },
           title:'Início',
           headerStyle:{
             backgroundColor: 'orange'
           },
           headerTintColor: '#FFF',
-          //headerShown: false,
+          headerShown: false,
         }}
         />
 
@@ -37,12 +42,18 @@ export default function App(){
         name="editar"
         component={Editar}
         options={{
+          cardStyle: {
+             backgroundColor: '#060CE9', 
+            },
           title:'Editar',
           headerStyle:{
             backgroundColor: 'orange'
           },
           headerTintColor: '#FFF',
-          //headerShown: false,
+          screenOptions: {
+            shouldPersist: true,
+          },
+          headerShown: false,
         }}
         />
 
@@ -51,14 +62,18 @@ export default function App(){
         component={Jogo}
         options={{
           title:'Jogo',
+            cardStyle: {
+             backgroundColor: '#060CE9', 
+            },
           headerStyle:{
             backgroundColor: 'orange'
           },
           headerTintColor: '#FFF',
+          
           screenOptions: {
-            shouldPersist: true, // Manter o estado ao alternar entre as telas
+            shouldPersist: true, 
           },
-          //headerShown: false,
+          headerShown: false,
         }}
         />
 
@@ -66,12 +81,15 @@ export default function App(){
         name="pergunta"
         component={Pergunta}
         options={{
+          cardStyle: {
+             backgroundColor: '#060CE9', 
+            },
           title:'Pergunta',
           headerStyle:{
             backgroundColor: 'orange'
           },
           headerTintColor: '#FFF',
-          //headerShown: false,
+          headerShown: false,
         }}
         />
 
@@ -79,18 +97,43 @@ export default function App(){
         name="resposta"
         component={Resposta}
         options={{
+          cardStyle: {
+             backgroundColor: '#060CE9', 
+            },
           title:'Resposta',
           headerStyle:{
             backgroundColor: 'orange'
           },
           headerTintColor: '#FFF',
-          //headerShown: false,
+          headerShown: false,
         }}
         />
+        <Stack.Screen
+        name="resultado"
+        component={Resultados}
+        options={{
+          cardStyle: {
+             backgroundColor: '#060CE9', 
+            },
+          title:'Resultados',
+          headerStyle:{
+            backgroundColor: 'orange'
+          },
+          headerTintColor: '#FFF',
+          screenOptions: {
+            shouldPersist: true, // Manter o estado ao alternar entre as telas
+          },
+          headerShown: false,
+        }}
+        />
+
         <Stack.Screen
         name="pontuacao"
         component={Pontuacao}
         options={{
+          cardStyle: {
+             backgroundColor: '#060CE9', 
+            },
           title:'Pontuacao',
           headerStyle:{
             backgroundColor: 'orange'
@@ -99,7 +142,7 @@ export default function App(){
           screenOptions: {
             shouldPersist: true, // Manter o estado ao alternar entre as telas
           },
-          //headerShown: false,
+          headerShown: false,
         }}
         />
 

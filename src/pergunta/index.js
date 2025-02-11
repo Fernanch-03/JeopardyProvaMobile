@@ -3,27 +3,36 @@ import { View, Text, Button, TouchableHighlight, StyleSheet  } from 'react-nativ
 import { useNavigation } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
 
-export default function Jogo({ route }) {
+export default function Pergunta({ route }) {
   const navigation = useNavigation();
   const [timerValue, setTimerValue] = useState(15);
+  const [timerRunning, setTimerRunning] = useState(false);
   
-  const responder = (r) => {
-    navigation.navigate('resposta', {r});
+  const responder = () => {
+    r = route.params?.r;
+    vl = route.params?.vl;
+    setTimerRunning(false);
+    setTimerValue(15);
+    navigation.navigate('resposta', {r,vl});
   };
 
   useEffect(() => {
     let interval;
-    if (timerValue > 0) {
+    if (timerRunning && timerValue > 0) {
       interval = setInterval(() => {
         setTimerValue((prevValue) => prevValue - 1);
       }, 1000);
     }
 
     return () => clearInterval(interval);
-  }, [timerValue]);
+  }, [timerRunning, timerValue]);
+
+  const handleStartStopButton = () => {
+    setTimerRunning(!timerRunning);
+  };
 
   return (
-    <View style={styles.container}>
+  <View style={styles.container}>
     <View style={styles.timer}>
       <Text style={styles.timerText}>{timerValue} seconds</Text>
       <Slider
@@ -32,50 +41,82 @@ export default function Jogo({ route }) {
         maximumValue={15}
         step={1}
         value={timerValue}
+        thumbStyle={styles.thumbStyle}
       />
-      </View>
-    <View style={styles.centeredDiv}>
-        <TouchableHighlight
-          style={styles.touchable}
-          onPress={() => responder(route.params?.r)}
-        >
-          <Text style={styles.centeredText}>{route.params?.p}</Text>
-        </TouchableHighlight>
-        </View>
     </View>
-  );
+
+    <View style={styles.centeredDiv}>
+      <TouchableHighlight
+        style={styles.touchable}
+        onPress={responder}
+        underlayColor="#DDDDDD"
+      >
+        <Text style={styles.centeredText}>{route.params?.p}</Text>
+      </TouchableHighlight>
+
+      <View style={styles.buttonContainer}>
+        <Button
+          title={timerRunning ? 'Stop Timer' : 'Start Timer'}
+          onPress={handleStartStopButton}
+          color="#007AFF"
+        />
+      </View>
+    </View>
+  </View>
+);
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 20,
-  },
-  touchable: {
-    width: '70%',
-    alignSelf: 'center', // Centraliza horizontalmente
-    position: 'absolute',
-    top: '50%',
-    transform: [{ translateY: '-50%' }],
+    justifyContent: 'center',
+    alignItems: 'center',
+
   },
   timer: {
-    marginTop:'0%',
-    width: '80%',
-    height: '20%', // Adicionando uma altura para melhor visualização
+    flex: 1,
+    width: '95%',
+    height: '15%',
     alignSelf: 'center',
-    justifyContent: 'center', // Centraliza verticalmente
-    backgroundColor: '#e0e0e0', // Adicionando uma cor de fundo para melhor visualização
+    justifyContent: 'center',
+    backgroundColor: '#007AFF',
+    borderRadius: 10,
+    padding: 20,
+    marginBottom: 30,
+  },
+  timerText: {
+    fontSize: 20,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  slider: {
+    marginTop: 10,
+  },
+  thumbStyle: {
+    width: 15,
+    height: 15,
+    borderRadius: 40,
+    backgroundColor: '#ff0000',
   },
   centeredDiv: {
-    marginTop:'40%',
-    width: '50%',
-    height: '50%', // Adicionando uma altura para melhor visualização
-    alignSelf: 'center',
-    justifyContent: 'center', // Centraliza verticalmente
-    backgroundColor: '#e0e0e0', // Adicionando uma cor de fundo para melhor visualização
+    width: '90%',
+    height: '50%',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    marginTop:40,
+  },
+  touchable: {
+    width: '85%',
+    padding: 20,
+    backgroundColor: '#007AFF',
+    borderRadius: 10,
   },
   centeredText: {
-    textAlign: 'center', 
+    fontSize: 18,
+    color: '#FFF',
+    textAlign: 'center',
+  },
+  buttonContainer: {
+    marginTop:80,
+    width: '100%',
   },
 });

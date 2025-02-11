@@ -1,132 +1,185 @@
-import React, { useState } from 'react'
-import { View, Text, Button, TextInput, FlatList } from 'react-native';
-import { useNavigation, StackActions } from '@react-navigation/native';
+import React, { useState, useEffect } from 'react'
+import { View, Text, Button, TextInput, FlatList, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const StorageKeys = {
+  USER: 'USER',
+  T1P: 'T1P',
+  T1R: 'T1R',
+  TITULO: 'TITULO',
+};
+
+const SectionTitle = ({ title }) => <Text style={styles.sectionTitle}>{title}</Text>;
+
+const CustomTextInput = ({ placeholder, onChangeText, value }) => (
+  <TextInput
+    style={styles.textInput}
+    placeholder={placeholder}
+    onChangeText={onChangeText}
+    value={value}
+  />
+);
+
+const CustomFlatList = ({ data, renderItem }) => (
+  <FlatList data={data} renderItem={renderItem} keyExtractor={(item, index) => index.toString()} />
+);
+
+const QuestionAnswerPair = ({ title, question, answer, onQuestionChange, onAnswerChange }) => (
+  <View style={styles.questionAnswerPair}>
+  <Text style={styles.sectionTitle}>Pergunta {title}</Text>
+    <TextInput
+      style={styles.textInput}
+      onChangeText={onQuestionChange}
+      value={question}
+      placeholder="Pergunta"
+    />
+    <TextInput
+      style={styles.textInput}
+      onChangeText={onAnswerChange}
+      value={answer}
+      placeholder="Resposta"
+    />
+
+  </View>
+);
 
 export default function Editar({ route }) {
- const navigation = useNavigation();
-const [t1p, setT1p] = useState(Array.from({ length: 9 }, (_, index) => route.params?.[`p${index + 1}`] || ''));
-const [t1r, setT1r] = useState(Array.from({ length: 9 }, (_, index) => route.params?.[`r${index + 1}`] || ''));
+  const navigation = useNavigation();
+  const [t1p, setT1p] = useState(Array.from({ length: 9 } , (_, index) => ''));
+  const [t1r, setT1r] = useState(Array.from({ length: 9 }, (_, index) => ''));
+  const [user, setUser] = useState(Array.from({ length: 3 }, (_, index) => ''));
+  const [titulo, setTitulo] = useState(Array.from({ length: 3 }, (_, index) => ''));
 
- const valort1p = (text, index) => {
+  useEffect(() => {
+    loadFromStorage(StorageKeys.USER, setUser);
+    loadFromStorage(StorageKeys.T1P, setT1p);
+    loadFromStorage(StorageKeys.T1R, setT1r);
+    loadFromStorage(StorageKeys.TITULO, setTitulo);
+
+  }, []);
+
+  const loadFromStorage = async (key, setter) => {
+    try {
+      const storedData = await AsyncStorage.getItem(key);
+      if (storedData !== null) {
+        setter(JSON.parse(storedData));
+      }
+    } catch (error) {
+      console.error(`Erro ao carregar dados do AsyncStorage (${key}):`, error);
+    }
+  };
+
+  const saveToStorage = async (key, data) => {
+    try {
+      await AsyncStorage.setItem(key, JSON.stringify(data));
+    } catch (error) {
+      Alert(`Erro ao salvar dados no AsyncStorage (${key}):`, error);
+    }
+  };
+  const clearStorage = async () => {
+  try {
+    await AsyncStorage.clear();
+    console.log('AsyncStorage foi limpo com sucesso.');
+    window.location.reload();
+  } catch (error) {
+    console.error('Erro ao limpar AsyncStorage', error);
+  }
+};
+
+  const userAleatorio = async () => {
+    try {
+      const newValues = [...user];
+      for(x = 0; x<=2; x++){
+      const response = await fetch('https://randomuser.me/api/');
+      const data = await response.json();
+      newValues[x] = data.results[0].name.first; // Usando o primeiro nome da lista
+      setUser(newValues);
+      saveToStorage(StorageKeys.USER,newValues);
+      }
+    } catch (error) {
+      console.error('Erro ao consultar a API:', error);
+    }
+  };
+
+
+  const valorUser = (text, index) => {
+    const newValues = [...user];
+    newValues[index] = text;
+    setUser(newValues);
+    saveToStorage(StorageKeys.USER, newValues);
+  };
+
+  const valort1p = (text, index) => {
     const newValues = [...t1p];
     newValues[index] = text;
     setT1p(newValues);
+    saveToStorage(StorageKeys.T1P, newValues);
   };
+
   const valort1r = (text, index) => {
     const newValues = [...t1r];
     newValues[index] = text;
     setT1r(newValues);
+    saveToStorage(StorageKeys.T1R, newValues);
   };
+
+  const valortitulo = (text, index) => {
+    const newValues = [...titulo];
+    newValues[index] = text;
+    setTitulo(newValues);
+    saveToStorage(StorageKeys.TITULO, newValues);
+  };
+
   function salvarDados() {
 
   navigation.navigate('Inicio', 
-  {p1:t1p[0],
-  p2:t1p[1],
-  p3:t1p[2],
-  p4:t1p[3],
-  p5:t1p[4],
-  p6:t1p[5],
-  p7:t1p[6],
-  p8:t1p[7],
-  p9:t1p[8],
-  r1:t1r[0],
-  r2:t1r[1],
-  r3:t1r[2],
-  r4:t1r[3],
-  r5:t1r[4],
-  r6:t1r[5],
-  r7:t1r[6],
-  r8:t1r[7],
-  r9:t1r[8],
-  });
+  {});
+
 }
 
   
 
  return (
-   <View>
-    <Text>Perguntas Tabela 1</Text>
-    {t1p.slice(0, 3).map((value, index) => (
-    <TextInput
-    key={index.toString()}/*
-    value={route.params?.p1}*/
-    onChangeText={(text) => valort1p(text, index)}
-    placeholder={/*route.params?.p1||*/`t1p ${index + 1}`}
-    />
-))}
+   <View style={styles.container}>
+      <SectionTitle title="Usuários" />
+      {user.slice(0, 3).map((value, index) => (
+        <CustomTextInput
+          key={index.toString()}
+          onChangeText={(text) => valorUser(text, index)}
+          value={value}
+          placeholder={`Usuário número ${index + 1}`}
+        />
+      ))}
+      <Button
+     title="Randomizar Usuarios"
+     onPress={userAleatorio}
+     />
 
-      <Text>Perguntas Tabela 2</Text>
-      {t1p.slice(3, 6).map((value, index) => (
-  <TextInput
-    key={index.toString()}
-    onChangeText={(text) => valort1p(text, index+3)}
-    placeholder={`t1p ${index + 4}`}
-  />
-))}
-
-      <Text>Perguntas Tabela 3</Text>
-      {t1p.slice(6, 9).map((value, index) => (
-
-  <TextInput
-    key={index.toString()}
-    onChangeText={(text) => valort1p(text, index+6)}
-    placeholder={`t1p ${index + 7}`}
-  />
-))}
-
-//Fim perguntas
-
-<Text>Respostas Tabela 1</Text>
-    {t1r.slice(0, 3).map((value, index) => (
-    <TextInput
-    key={index.toString()}/*
-    value={route.params?.r1}*/
-    onChangeText={(text) => valort1r(text, index)}
-    placeholder={/*route.params?.r1||*/`t1r ${index + 1}`}
-    />
-))}
-
-  <Text>Respostas Tabela 2</Text>
-  {t1r.slice(3, 6).map((value, index) => (
-  <TextInput
-    key={index.toString()}
-    onChangeText={(text) => valort1r(text, index+3)}
-    placeholder={`t1r ${index + 4}`}
-  />
-))}
-
-  <Text>Respostas Tabela 3</Text>
-  {t1r.slice(6, 9).map((value, index) => (
-
-  <TextInput
-    key={index.toString()}
-    onChangeText={(text) => valort1r(text, index+6)}
-    placeholder={`t1r ${index + 7}`}
-  />
-))}
-
-
-
-    <FlatList
-  data={t1p}
-  renderItem={({ item, index }) => (
-    <Text>{`Texto Desejado ${index + 1}: ${item}`}</Text>
-  )}
-  keyExtractor={(item, index) => index.toString()}
-/>
-  <FlatList
-  data={t1r}
-  renderItem={({ item, index }) => (
-    <Text>{`Texto Desejado ${index + 1}: ${item}`}</Text>
-  )}
-  keyExtractor={(item, index) => index.toString()}
-/>
-
+      <SectionTitle title="Títulos" />
+      {titulo.slice(0, 3).map((value, index) => (
+        <CustomTextInput
+          key={index.toString()}
+          onChangeText={(text) => valortitulo(text, index)}
+          value={value}
+          placeholder={`Titulo da tabela ${index + 1}`}
+        />
+      ))}
+     
+      {t1p.slice(0, 9).map((value, index) => (
+        <QuestionAnswerPair
+          key={index.toString()}
+          title={index + 1}
+          question={value}
+          answer={t1r[index]}
+          onQuestionChange={(text) => valort1p(text, index)}
+          onAnswerChange={(text) => valort1r(text, index)}
+        />
+      ))}
 
      <Button
-     title="Voltar para tela Home"
-     onPress={ () => navigation.goBack() }
+     title="Limpar dados"
+     onPress={ () => clearStorage() }
      />
      <Button
      title="Salvar"
@@ -135,3 +188,25 @@ const [t1r, setT1r] = useState(Array.from({ length: 9 }, (_, index) => route.par
    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    color: 'white'
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 10,
+    color: 'white'
+  },
+  textInput: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingLeft: 10,
+    color: 'white'
+  },
+});
